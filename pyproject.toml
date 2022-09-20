@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "test-project"
+version = "0.1.0"
+description = ""
+authors = ["KirZah <88044130+KirZah@users.noreply.github.com>"]
+readme = "README.md"
+packages = [{include = "test_project"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+SQLAlchemy = "^1.4.41"
+Flask = "^2.2.2"
+psycopg2-binary = "^2.9.3"
+pydantic = "^1.10.2"
+loguru = "^0.6.0"
+
+
+
+[tool.poetry.dev-dependencies]
+requests = "^2.28.1"
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
