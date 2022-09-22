@@ -17,15 +17,8 @@ class BaseModel(Base):
     # updated_at = Column(TIMESTAMP, nullable=False)
 
     def __repr__(self):
-        return "<{0.__class__.__name__}(id={0.id!r})>".format(self)
-
-
-link_table = Table(
-    "link_table",
-    Base.metadata,
-    Column("id_author", ForeignKey("authors.id_author"), primary_key=True),
-    Column("id_book", ForeignKey("books.id_book"), primary_key=True),
-)
+        # return "<{0.__class__.__name__}(id={0.id!r})>".format(self)
+        return "<{0.__class__.__name__}()>".format(self)
 
 
 class Author(BaseModel):
@@ -34,9 +27,7 @@ class Author(BaseModel):
     id_author = Column(Integer, nullable=False, unique=True, primary_key=True, autoincrement=True)
     name_author = Column(String(255), nullable=False)
 
-    books = relationship(
-        "Book", secondary=link_table, back_populates='authors'
-    )
+    books = relationship("LinkTable", back_populates='author')
 
 
 class Book(BaseModel):
@@ -47,7 +38,14 @@ class Book(BaseModel):
     year = Column(Integer, nullable=True)
     count = Column(Integer, nullable=False)
 
-    authors = relationship(
-        "Author", secondary=link_table, back_populates='books'
-    )
+    authors = relationship("LinkTable", back_populates='book')
+
+
+class LinkTable(Base):
+    __tablename__ = "link_table"
+    id_author = Column(ForeignKey("authors.id_author", ondelete="CASCADE"), primary_key=True)
+    id_book = Column(ForeignKey("books.id_book", ondelete="CASCADE"), primary_key=True)
+
+    author = relationship("Author", back_populates="books")
+    book = relationship("Book", back_populates="authors")
 

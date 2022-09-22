@@ -1,22 +1,25 @@
-from flask import Flask, request
+import json
+
+from flask import Flask, request, jsonify, Response
+from sqlalchemy.orm import Session
 from loguru import logger as log
 
 # from main import app
 from test_project.db import schemas, models, crud
 from test_project.db.database import SessionLocal
-from test_project.models.request import GetBooksRequest
+from test_project.models import request_models, response_models
 
-"""
+""" Функции сервиса
 todo:
-Функции сервиса:
 •  выдача списка книг с писателями и количеством экземпляров книг
+
+half/done:
+•  выдача списка писателей (* с количеством экземпляров книг каждого автора, находящихся в БД на текущий момент)
+
+done:
 •  фильтрация списка книг по году издания
 •  добавление новой книги любого писателя (учесть, что писателя добавляемой книги в БД может не существовать)
 •  удаление книги
-* усложненный вариант
-
-done:
-•  выдача списка писателей (* с количеством экземпляров книг каждого автора, находящихся в БД на текущий момент)
 
 """
 
@@ -35,43 +38,118 @@ def index():
 
 @app.route('/authors', methods=['GET'])
 def get_authors():
+    # response = []
+    response = response_models.GetAuthorsResponse(authors=[])
     with SessionLocal() as db:
         authors = crud.get_all_authors(db)
 
-        log.debug(f"{authors=}")
-    return authors
+        log.debug(f"{authors = }")
+        log.debug(f"{type(authors) = }")
+        for row in authors:
+            log.debug(f"{type(row) = }")
+            log.debug(f"{row = }")
+            log.debug(f"{row[0] = }")
+            author = row[0]
+            # log.debug(f"{type(author.name_author) = }")
+            # log.debug(f"{author.name_author = }")
+            # log.debug(f"{type(author.id_author) = }")
+            # log.debug(f"{author.id_author = }")
+            response.authors.append(response_models.GetAuthorResponse(
+                id=author.id_author,
+                name_author=author.name_author,
+                # books_instances_n=-1,  # TODO FIXME!!!
+            ))
+
+    log.debug(f"{response.json() = }")
+
+    return Response(response.json(), status=200)
 
 
-# @app.route('/books', methods=['GET'])
-# def get_books():
-#     with SessionLocal() as db:
-#         books = crud.get_all_books(db)
-#         log.debug(f"{books=}")
-#     return books
+@app.route('/books', methods=['GET'])
+def get_books():  # todo make request with params in url
+    data: dict = request.json
+    log.debug(f"{request.json = }")
 
+    req = request_models.GetBooksRequest(
+        min_year=data['min_year'],
+        max_year=data['max_year'],
+    )
+    log.debug(f"{req = }")
 
-@app.route('/books_filter', methods=['GET'])
-def get_books():
-    if request.method == 'GET':
-        print(f"{request=}")
-        request_json = request.json
-        print(f"{req=}")
-        request = GetBooksRequest(**request_json)
-
-        # todo ask есть ли ограничения на то какие года допустимы
-        if request.min_year is None and request.max_year is None:
-            with SessionLocal() as db:
-                books = crud.get_all_books(db)
-                log.debug(f"{books=}")
+    response = response_models.GetBooksResponse(books=[])
+    # todo ask есть ли ограничения на то какие года допустимы
+    with SessionLocal() as db:
+        if req.min_year is None and req.max_year is None:
+            log.info(f"Trying to get books without year borders")
+            books = crud.get_all_books(db)
+            log.debug(f"{books=}")
         else:
-            with SessionLocal() as db:
-                books = crud.get_books_filter_by_year(
+            books = crud.get_books_filter_by_year(
+                db=db,
+                min_year=req.min_year,
+                max_year=req.max_year,
+            )
+            log.debug(f"{books=}")
+
+        for book in books:
+            # log.debug(f"{book. = }")
+            response.books.append(response_models.GetBookResponse(
+                id=book.id_book,
+                name_book=book.name_book,
+                count=book.count,
+                year=book.year,
+            ))
+    log.debug(f"{response.dict() = }")
+
+    return Response(response.json(), status=200)
+
+
+@app.route('/add_book', methods=['POST'])
+def add_book():  # todo make it a transaction
+    data: dict = request.json
+    log.debug(f"{request.json = }")
+    req = request_models.AddBookRequest(**data)
+    log.debug(f"{req = }")
+    with SessionLocal() as db:
+        db: Session
+
+        book: models.Book = crud.create_book(
+            db=db,
+            book=schemas.BookCreate(**req.book.dict())
+        )
+
+        for author_base in req.authors:
+            author_base: schemas.AuthorBase
+            try:
+                author = crud.get_needed_author(db, author_base.name_author)
+            except Exception as err:  # fixme
+                log.error(err)
+                db.rollback()
+                # db.begin()
+                author = crud.create_author(
                     db=db,
-                    min_year=request.min_year,
-                    max_year=request.max_year,
+                    author=schemas.AuthorCreate(**author_base.dict())
                 )
-                log.debug(f"{books=}")
-        return books
+
+            crud.create_author_book_link(
+                db=db,
+                link_row=schemas.LinkTableCreate(
+                    id_author=author.id_author,
+                    id_book=book.id_book,
+                )
+            )
+
+    return Response("ok", status=200)
+
+
+@app.route('/delete_book', methods=['DELETE'])
+def delete_book():
+    data: dict = request.json
+    log.debug(data)
+    with SessionLocal() as db:
+        crud.delete_book(db, id_book=data['id_book'])
+
+    return Response("ok", status=200)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,8 @@
-from typing import Optional, Type, Any, Dict
+from typing import Optional, Type, Any, Dict, List
 
 from pydantic import BaseModel, root_validator, validator
+
+from test_project.db.schemas import BookBase, AuthorBase
 
 # fixme ask constraints
 MIN_YEAR = -3000
@@ -14,8 +16,11 @@ class GetBooksRequest(BaseModel):
     class Config:
         allow_mutation = False
 
-    @staticmethod
-    def _validate_year(value):
+    @validator('min_year', 'max_year', pre=True)
+    def validate_year(cls, value):
+        if value is None:
+            return value
+
         min_year = MIN_YEAR
         max_year = MAX_YEAR
         if value < min_year or value > max_year:
@@ -25,25 +30,22 @@ class GetBooksRequest(BaseModel):
             )
         return value
 
-    @validator('min_year', pre=True)
-    def validate_min_year(cls, value):
-        if value is None:
-            value = MIN_YEAR
-        return cls._validate_year(value)
-
-    @validator('max_year', pre=True)
-    def validate_max_year(cls, value):
-        if value is None:
-            value = MAX_YEAR
-        return cls._validate_year(value)
-
     @root_validator()
     def validate(cls, values):
         min_year = values.get('min_year')
         max_year = values.get('max_year')
+
+        if min_year is None or max_year is None:
+            return values
+
         if min_year > max_year:
             raise ValueError(
                 f"Parameter 'min_year' must be smaller for equal to "
                 f"'max_year': ({min_year} > {max_year})"
             )
         return values
+
+
+class AddBookRequest(BaseModel):
+    book: BookBase
+    authors: List[AuthorBase]

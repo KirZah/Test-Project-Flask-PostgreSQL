@@ -4,6 +4,20 @@ from typing import List, Union, Optional
 from pydantic import BaseModel
 
 
+class LinkTableBase(BaseModel):
+    id_author: int
+    id_book: int
+
+
+class LinkTableCreate(LinkTableBase):
+    pass
+
+
+class LinkTable(LinkTableBase):
+    author: 'Author'
+    book: 'Book'
+
+
 class AuthorBase(BaseModel):
     name_author: str
 
@@ -15,13 +29,13 @@ class AuthorCreate(AuthorBase):
 class Author(AuthorBase):
     id_author: int
 
-    books: List['Book']
+    books: List[LinkTable]
 
 
 class BookBase(BaseModel):
     name_book: str
-    year: Optional[int]
     count: int
+    year: Optional[int]
 
 
 class BookCreate(BookBase):
@@ -31,4 +45,5 @@ class BookCreate(BookBase):
 class Book(BookBase):
     id_book: int
 
-    authors: List['Author']
+    authors: List[LinkTable]
+

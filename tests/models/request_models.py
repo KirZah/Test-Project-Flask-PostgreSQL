@@ -1,7 +1,7 @@
 from pydantic.error_wrappers import ValidationError
 
-from test_project.models.request import GetBooksRequest
-from test_project.models.request import MIN_YEAR, MAX_YEAR
+from test_project.models.request_models import GetBooksRequest
+from test_project.models.request_models import MIN_YEAR, MAX_YEAR
 
 
 def test_class_get_books_request():
