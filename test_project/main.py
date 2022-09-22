@@ -1,6 +1,7 @@
 import json
+from typing import List
 
-from flask import Flask, request, jsonify, Response
+from flask import Flask, request, Response
 from sqlalchemy.orm import Session
 from loguru import logger as log
 
@@ -11,7 +12,6 @@ from test_project.models import request_models, response_models
 
 """ Функции сервиса
 todo:
-•  выдача списка книг с писателями и количеством экземпляров книг
 
 half/done:
 •  выдача списка писателей (* с количеством экземпляров книг каждого автора, находящихся в БД на текущий момент)
@@ -20,6 +20,7 @@ done:
 •  фильтрация списка книг по году издания
 •  добавление новой книги любого писателя (учесть, что писателя добавляемой книги в БД может не существовать)
 •  удаление книги
+•  выдача списка книг с писателями и количеством экземпляров книг
 
 """
 
@@ -57,7 +58,7 @@ def get_authors():
             response.authors.append(response_models.GetAuthorResponse(
                 id=author.id_author,
                 name_author=author.name_author,
-                # books_instances_n=-1,  # TODO FIXME!!!
+                books_instances_n=-1,  # TODO FIXME!!!
             ))
 
     log.debug(f"{response.json() = }")
@@ -92,12 +93,22 @@ def get_books():  # todo make request with params in url
             log.debug(f"{books=}")
 
         for book in books:
+            book: models.Book
             # log.debug(f"{book. = }")
+            authors = crud.get_book_authors(db, id_book=book.id_book)
+            authors = [
+                response_models.AuthorModel(
+                    id=author.id_author,
+                    name_author=author.name_author,
+                )
+                for author in authors
+            ]
             response.books.append(response_models.GetBookResponse(
                 id=book.id_book,
                 name_book=book.name_book,
-                count=book.count,
+                amount=book.count,
                 year=book.year,
+                authors=authors,
             ))
     log.debug(f"{response.dict() = }")
 
@@ -121,7 +132,7 @@ def add_book():  # todo make it a transaction
         for author_base in req.authors:
             author_base: schemas.AuthorBase
             try:
-                author = crud.get_needed_author(db, author_base.name_author)
+                author = crud.get_author_by_name(db, author_base.name_author)
             except Exception as err:  # fixme
                 log.error(err)
                 db.rollback()

@@ -3,10 +3,13 @@ from typing import Optional, Type, Any, Dict, List
 from pydantic import BaseModel, root_validator, validator
 
 
-class GetAuthorResponse(BaseModel):
+class AuthorModel(BaseModel):
     id: int
     name_author: str
-    # books_instances_n: int
+
+
+class GetAuthorResponse(AuthorModel):
+    books_instances_n: int
 
 
 class GetAuthorsResponse(BaseModel):
@@ -17,7 +20,8 @@ class GetBookResponse(BaseModel):
     id: int
     year: Optional[int]
     name_book: str
-    count: int
+    amount: int
+    authors: List[AuthorModel]
 
 
 class GetBooksResponse(BaseModel):

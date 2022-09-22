@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.sql import select
+from sqlalchemy.sql.functions import sum
 from loguru import logger as log
 
 from test_project.db import models, schemas
@@ -58,7 +59,7 @@ def get_all_authors(db: Session) -> List[models.Author]:
     return result
 
 
-def get_needed_author(
+def get_author_by_name(
         db: Session,
         name_author: str,
 ) -> models.Author:
@@ -67,6 +68,13 @@ def get_needed_author(
     return db.query(models.Author) \
         .where(models.Author.name_author == name_author) \
         .one()
+
+
+def get_book_authors(db: Session, id_book: int) -> List[models.Author]:
+    return db.query(models.Author) \
+        .join(models.LinkTable, models.LinkTable.id_author == models.Author.id_author) \
+        .filter(models.LinkTable.id_book == id_book) \
+        .all()
 
 
 def get_all_books(db: Session):  # List[models.Books]

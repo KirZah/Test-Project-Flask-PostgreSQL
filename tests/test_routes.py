@@ -132,10 +132,10 @@ if __name__ == '__main__':
     #     test_delete_book(id_book=i)  # todo make it 3
     # test_delete_book(id_book=5)  # todo make it 5
 
-    test_get_authors()
+    # test_get_authors()
 
     # фильтрация списка книг по году издания
-    test_get_books()
+    # test_get_books()
     test_get_books(1999, 1999)
-    test_get_books(max_year=2003)
-    test_get_books(min_year=2003)
+    # test_get_books(max_year=2003)
+    # test_get_books(min_year=2003)
