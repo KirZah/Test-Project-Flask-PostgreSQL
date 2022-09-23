@@ -52,24 +52,12 @@ def test_class_get_books_request():
         else:
             raise AssertionError(f"'min smaller than max' NOT PASSED!")
 
-    def test_none_values(min_year, max_year):
-        request = GetBooksRequest(
-            min_year=min_year,
-            max_year=max_year,
-        )
-        # print(request)
-        return request
-
     test_ok_case(-30, 2050)
     test_if_mutable()
     test_if_min_less_than_max()
     test_year_boundaries(MIN_YEAR - 1, MAX_YEAR)
     test_year_boundaries(MIN_YEAR, MAX_YEAR + 1)
     test_year_boundaries(MIN_YEAR - 1, MAX_YEAR + 1)
-    assert test_none_values(0, 0) == test_ok_case(0, 0)
-    assert test_none_values(None, 0) == test_ok_case(MIN_YEAR, 0)
-    assert test_none_values(0, None) == test_ok_case(0, MAX_YEAR)
-    assert test_none_values(None, None) == test_ok_case(MIN_YEAR, MAX_YEAR)
 
 
 test_class_get_books_request()

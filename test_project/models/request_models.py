@@ -4,7 +4,7 @@ from pydantic import BaseModel, root_validator, validator
 
 from test_project.db.schemas import BookBase, AuthorBase
 
-# fixme ask constraints
+# todo: ask year constraints
 MIN_YEAR = -3000
 MAX_YEAR = 3000
 

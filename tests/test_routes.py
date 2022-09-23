@@ -126,16 +126,14 @@ def add_some_books():
 
 
 if __name__ == '__main__':
-    # add_some_books()
-    # удаляем книжки мошенника укравшего франшизу уже дважды!
-    # for i in range(26, 47):
-    #     test_delete_book(id_book=i)  # todo make it 3
-    # test_delete_book(id_book=5)  # todo make it 5
-
-    # test_get_authors()
-
+    add_some_books()
+    # посмотреть на всех авторов
+    test_get_authors()
     # фильтрация списка книг по году издания
-    # test_get_books()
+    test_get_books()
     test_get_books(1999, 1999)
-    # test_get_books(max_year=2003)
-    # test_get_books(min_year=2003)
+    test_get_books(max_year=2003)
+    test_get_books(min_year=2003)
+    # удаляем книжки мошенника укравшего франшизу уже дважды!
+    test_delete_book(id_book=3)
+    test_delete_book(id_book=5)

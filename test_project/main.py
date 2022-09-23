@@ -1,17 +1,12 @@
-import json
-from typing import List
-
 from flask import Flask, request, Response
 from sqlalchemy.orm import Session
 from loguru import logger as log
 
-# from main import app
 from test_project.db import schemas, models, crud
 from test_project.db.database import SessionLocal
 from test_project.models import request_models, response_models
 
 """ Функции сервиса
-todo:
 
 half/done:
 •  выдача списка писателей (* с количеством экземпляров книг каждого автора, находящихся в БД на текущий момент)
@@ -24,12 +19,7 @@ done:
 
 """
 
-# create the extension
-# create the app
 app = Flask(__name__)
-# # configure the SQLite database, relative to the app instance folder
-# app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///project.db"
-import test_project.routes
 
 
 @app.route("/")
@@ -39,26 +29,14 @@ def index():
 
 @app.route('/authors', methods=['GET'])
 def get_authors():
-    # response = []
     response = response_models.GetAuthorsResponse(authors=[])
     with SessionLocal() as db:
         authors = crud.get_all_authors(db)
-
-        log.debug(f"{authors = }")
-        log.debug(f"{type(authors) = }")
         for row in authors:
-            log.debug(f"{type(row) = }")
-            log.debug(f"{row = }")
-            log.debug(f"{row[0] = }")
             author = row[0]
-            # log.debug(f"{type(author.name_author) = }")
-            # log.debug(f"{author.name_author = }")
-            # log.debug(f"{type(author.id_author) = }")
-            # log.debug(f"{author.id_author = }")
             response.authors.append(response_models.GetAuthorResponse(
                 id=author.id_author,
                 name_author=author.name_author,
-                books_instances_n=-1,  # TODO FIXME!!!
             ))
 
     log.debug(f"{response.json() = }")
@@ -78,7 +56,6 @@ def get_books():  # todo make request with params in url
     log.debug(f"{req = }")
 
     response = response_models.GetBooksResponse(books=[])
-    # todo ask есть ли ограничения на то какие года допустимы
     with SessionLocal() as db:
         if req.min_year is None and req.max_year is None:
             log.info(f"Trying to get books without year borders")
@@ -94,7 +71,6 @@ def get_books():  # todo make request with params in url
 
         for book in books:
             book: models.Book
-            # log.debug(f"{book. = }")
             authors = crud.get_book_authors(db, id_book=book.id_book)
             authors = [
                 response_models.AuthorModel(
@@ -133,10 +109,9 @@ def add_book():  # todo make it a transaction
             author_base: schemas.AuthorBase
             try:
                 author = crud.get_author_by_name(db, author_base.name_author)
-            except Exception as err:  # fixme
+            except Exception as err:  # fixme use less wide exception
                 log.error(err)
                 db.rollback()
-                # db.begin()
                 author = crud.create_author(
                     db=db,
                     author=schemas.AuthorCreate(**author_base.dict())

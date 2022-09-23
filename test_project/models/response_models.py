@@ -1,6 +1,6 @@
-from typing import Optional, Type, Any, Dict, List
+from typing import Optional, List
 
-from pydantic import BaseModel, root_validator, validator
+from pydantic import BaseModel
 
 
 class AuthorModel(BaseModel):
@@ -9,7 +9,8 @@ class AuthorModel(BaseModel):
 
 
 class GetAuthorResponse(AuthorModel):
-    books_instances_n: int
+    # books_instances_n: int  # todo
+    ...
 
 
 class GetAuthorsResponse(BaseModel):

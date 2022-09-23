@@ -1,25 +1,20 @@
 import functools
-from typing import Optional, Type, Callable, List
+from typing import Optional, Callable, List
 
-from sqlalchemy import func, asc, select
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import SQLAlchemyError, IntegrityError
-from sqlalchemy.dialects import postgresql
 from sqlalchemy.sql import select
-from sqlalchemy.sql.functions import sum
 from loguru import logger as log
 
 from test_project.db import models, schemas
 
 
 def _add_commit_refresh(f: Callable):
+
     @functools.wraps(f)
     def wrapper(db: Session, *args, **kwargs):
         db_obj = f(db, *args, **kwargs)
-
         db.add(db_obj)
         db.commit()
-        # db.flush()
         db.refresh(db_obj)
         log.debug(f"{db_obj=}")
         return db_obj
@@ -63,8 +58,7 @@ def get_author_by_name(
         db: Session,
         name_author: str,
 ) -> models.Author:
-    # fixme should get only one author, but name_author is not unique?
-    # todo ask if name_author is unique
+    # fixme should get only one author, but what if name_author is not unique?
     return db.query(models.Author) \
         .where(models.Author.name_author == name_author) \
         .one()
@@ -77,7 +71,7 @@ def get_book_authors(db: Session, id_book: int) -> List[models.Author]:
         .all()
 
 
-def get_all_books(db: Session):  # List[models.Books]
+def get_all_books(db: Session) -> List[models.Book]:
     return db.query(models.Book).all()
 
 

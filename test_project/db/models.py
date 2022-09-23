@@ -1,10 +1,7 @@
 # coding=utf-8
 
-from sqlalchemy import (
-    Table, Column, ForeignKey, UniqueConstraint,
-    Integer, String, TIMESTAMP,
-)
-from sqlalchemy.orm import relationship, relation
+from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship
 
 from .database import Base
 
@@ -17,7 +14,6 @@ class BaseModel(Base):
     # updated_at = Column(TIMESTAMP, nullable=False)
 
     def __repr__(self):
-        # return "<{0.__class__.__name__}(id={0.id!r})>".format(self)
         return "<{0.__class__.__name__}()>".format(self)
 
 

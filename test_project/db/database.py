@@ -10,7 +10,7 @@ engine = create_engine(
     max_overflow=10,  # how many exceeding connections
     pool_recycle=-1,  # reconnection period
     pool_timeout=30,
-    # connect_args={"check_same_thread": False}
+    # connect_args={"check_same_thread": False}  # for sqlite
     pool_pre_ping=True,
 )
 
@@ -19,7 +19,3 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 # и представляет «промежуточную зону» для всех объектов,
 # загруженных в объект сессии базы данных.
 Base = declarative_base()
-
-# # Свяжим engine с метаданными класса Base,
-# # чтобы декларативы могли получить доступ через экземпляр DBSession
-# Base.metadata.bind = engine
